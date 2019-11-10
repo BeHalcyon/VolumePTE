@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VolumePTE", "VolumePTE\VolumePTE.vcxproj", "{1D0FDDF7-F8B1-4B31-9D55-005091481D82}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Volume2Hin", "VolumePTE\VolumePTE.vcxproj", "{1D0FDDF7-F8B1-4B31-9D55-005091481D82}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTE", "PTE\PTE.vcxproj", "{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{1D0FDDF7-F8B1-4B31-9D55-005091481D82}.Release|x64.Build.0 = Release|x64
 		{1D0FDDF7-F8B1-4B31-9D55-005091481D82}.Release|x86.ActiveCfg = Release|Win32
 		{1D0FDDF7-F8B1-4B31-9D55-005091481D82}.Release|x86.Build.0 = Release|Win32
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Debug|x64.ActiveCfg = Debug|x64
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Debug|x64.Build.0 = Debug|x64
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Debug|x86.ActiveCfg = Debug|Win32
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Debug|x86.Build.0 = Debug|Win32
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Release|x64.ActiveCfg = Release|x64
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Release|x64.Build.0 = Release|x64
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Release|x86.ActiveCfg = Release|Win32
+		{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
