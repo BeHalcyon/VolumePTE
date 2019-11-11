@@ -13,10 +13,14 @@ sampler::~sampler()
 	if (alias != NULL) { free(alias); alias = NULL; }
 	if (prob != NULL) { free(prob); prob = NULL; }
 }
-
+/***
+ * ndata:	number of nodes
+ * p:		每个node边权重之和，视作节点的概率
+ * 该函数将对应节点的权重转换为0~1之间的概率
+ */
 void sampler::init(long long ndata, double *p)
 {
-	n = ndata;
+	n = ndata;	//number of nodes
 
 	alias = (long long *)malloc(n * sizeof(long long));
 	prob = (double *)malloc(n * sizeof(double));
@@ -30,7 +34,7 @@ void sampler::init(long long ndata, double *p)
 	S = (long long *)malloc(n * sizeof(long long));
 	L = (long long *)malloc(n * sizeof(long long));
 
-	// Normalise given probabilities:
+	// Normalize given probabilities:
 	double sum = 0;
 	for (i = 0; i < n; ++i)
 	{
@@ -46,9 +50,11 @@ void sampler::init(long long ndata, double *p)
 		fprintf(stderr, "ransampl: no nonzero probability\n");
 		exit(1);
 	}
+	//对节点的概率进行归一化[0,n]
 	for (i = 0; i < n; ++i) P[i] = p[i] * n / sum;
 
 	// Set separate index lists for small and large probabilities:
+	// 为小概率和大概率设定单独的索引列表
 	long long nS = 0, nL = 0;
 	for (i = n - 1; i >= 0; --i)
 	{
@@ -134,6 +140,7 @@ int line_node::add_node(char *word)
 {
 	unsigned int hash, length = strlen(word) + 1;
 	if (length > MAX_STRING) length = MAX_STRING;
+	//node以文件的顺序存储
 	node[node_size].word = (char *)calloc(length, sizeof(char));
 	strcpy(node[node_size].word, word);
 	node_size++;
@@ -142,21 +149,26 @@ int line_node::add_node(char *word)
 		node_max_size += 1000;
 		node = (struct struct_node *)realloc(node, node_max_size * sizeof(struct struct_node));
 	}
+	//利用hash将对应node的index存进来
 	hash = get_hash(word);
 	while (node_hash[hash] != -1) hash = (hash + 1) % hash_table_size;
 	node_hash[hash] = node_size - 1;
 	return node_size - 1;
 }
-
+/***
+* 该函数用于初始化label文件或word文件，其中label和word分别作为两个网络，需分别存储对应的vec以及hash
+*/
 void line_node::init(char *file_name, int vector_dim)
 {
 	strcpy(node_file, file_name);
 	vector_size = vector_dim;
-
+	//分配n个节点，节点数量为最大size
 	node = (struct struct_node *)calloc(node_max_size, sizeof(struct struct_node));
+	//初始化哈希表为-1
 	node_hash = (int *)calloc(hash_table_size, sizeof(int));
 	for (int k = 0; k != hash_table_size; k++) node_hash[k] = -1;
 
+	//读取node文件，文件每一行都是一个label
 	FILE *fi = fopen(node_file, "rb");
 	if (fi == NULL)
 	{
@@ -176,10 +188,14 @@ void line_node::init(char *file_name, int vector_dim)
 
 	long long a, b;
 	//a = posix_memalign((void **)&_vec, 128, (long long)node_size * vector_size * sizeof(real));
+	//_vec为node_size长度，其向量维度为vector_size
 	_vec = (real *)malloc(node_size * vector_size * sizeof(real));
 	if (_vec == NULL) { printf("Memory allocation failed\n"); exit(1); }
+	//随机初始化_vec
 	for (b = 0; b < vector_size; b++) for (a = 0; a < node_size; a++)
 		_vec[a * vector_size + b] = (rand() / (real)RAND_MAX - 0.5) / vector_size;
+
+	//vec是构建一个二维的矩阵形式？
 	new (&vec) Eigen::Map<BLPMatrix>(_vec, node_size, vector_size);
 
 	printf("Reading nodes from file: %s, DONE!\n", node_file);
@@ -219,6 +235,10 @@ line_hin::~line_hin()
 	hin_size = 0;
 }
 
+/***
+ * 初始化word与lable(doc)之间的网络。
+ *	在hin的合并网络文件中，按行寻找节点（u,v,weight,type），确定u节点和v节点中的id，依次为对应u节点创建与v节点相连接的边
+ */
 void line_hin::init(char *file_name, line_node *p_u, line_node *p_v)
 {
 	strcpy(hin_file, file_name);
@@ -226,7 +246,9 @@ void line_hin::init(char *file_name, line_node *p_u, line_node *p_v)
 	node_u = p_u;
 	node_v = p_v;
 
+	//node_size表示所有label_node，word_node, doc_node的总和。
 	int node_size = node_u->node_size;
+	//hin记录u中每个节点与v中节点连接的情况
 	hin = new std::vector<hin_nb>[node_size];
 
 	FILE *fi = fopen(hin_file, "rb");
@@ -234,6 +256,9 @@ void line_hin::init(char *file_name, line_node *p_u, line_node *p_v)
 	int u, v;
 	double w;
 	hin_nb curnb;
+
+	//wordl 为doc或label， word2为原始文本
+	//循环记录label网络中与word网络相交的部分
 	while (fscanf(fi, "%s %s %lf %c", word1, word2, &w, &tp) == 4)
 	{
 		if (hin_size % 10000 == 0)
@@ -295,11 +320,16 @@ line_trainer::~line_trainer()
 	if (neg_table != NULL) { free(neg_table); neg_table = NULL; }
 }
 
+/***
+ * 初始化训练的参数，包括双网络中连接某节点所有边的权重、所有节点的度、并初始化sampler，根据权重初始化节点的概率。
+ * 初始化负采样表，初始化exptable
+ */
 void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 {
 	edge_tp = edge_type;
 	phin = p_hin;
 	neg_samples = negative;
+	//node_u和node_v表示两个网络
 	line_node *node_u = phin->node_u, *node_v = phin->node_v;
 	if (node_u->vector_size != node_v->vector_size)
 	{
@@ -308,9 +338,10 @@ void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 	}
 
 	// compute the degree of vertices
-	u_nb_cnt = (int *)calloc(node_u->node_size, sizeof(int));
-	u_wei = (double *)calloc(node_u->node_size, sizeof(double));
-	v_wei = (double *)calloc(node_v->node_size, sizeof(double));
+	u_nb_cnt = (int *)calloc(node_u->node_size, sizeof(int));		//每个node_u对应的边数，每个node_u的度
+	u_wei = (double *)calloc(node_u->node_size, sizeof(double));		//node_u中每个节点对应的权重之和
+	v_wei = (double *)calloc(node_v->node_size, sizeof(double));		//node_v中每个节点对应的权重之和
+	//针对于node_u的每个节点，统计该节点对应其他节点，确定类型相符后，统计每个节点的度，
 	for (int u = 0; u != node_u->node_size; u++)
 	{
 		for (int k = 0; k != (int)(phin->hin[u].size()); k++)
@@ -318,7 +349,7 @@ void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 			int v = phin->hin[u][k].nb_id;
 			char cur_edge_type = phin->hin[u][k].eg_tp;
 			double wei = phin->hin[u][k].eg_wei;
-
+			//仅统计与目标相符的网络
 			if (cur_edge_type != edge_tp) continue;
 
 			u_nb_cnt[u]++;
@@ -328,8 +359,8 @@ void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 	}
 
 	// allocate spaces for edges
-	u_nb_id = (int **)malloc(node_u->node_size * sizeof(int *));
-	u_nb_wei = (double **)malloc(node_u->node_size * sizeof(double *));
+	u_nb_id = (int **)malloc(node_u->node_size * sizeof(int *));			//二维数组，[node_size][degree_of_each_node]，存储针对每个节点边的另一个相邻节点的id
+	u_nb_wei = (double **)malloc(node_u->node_size * sizeof(double *));	//存储针对每个节点相邻边的权重值，u_wei存储权重之和
 	for (int k = 0; k != node_u->node_size; k++)
 	{
 		u_nb_id[k] = (int *)malloc(u_nb_cnt[k] * sizeof(int));
@@ -337,7 +368,7 @@ void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 	}
 
 	// read neighbors
-	int *pst = (int *)calloc(node_u->node_size, sizeof(int));
+	int *pst = (int *)calloc(node_u->node_size, sizeof(int));		//pst仅为每个node_u提供临时存储功能，依次从0到n，类似于push_back，calloc默认初始化为0
 	for (int u = 0; u != node_u->node_size; u++)
 	{
 		for (int k = 0; k != (int)(phin->hin[u].size()); k++)
@@ -356,8 +387,8 @@ void line_trainer::init(char edge_type, line_hin *p_hin, int negative)
 	free(pst);
 
 	// init sampler for edges
-	smp_u.init(node_u->node_size, u_wei);
-	smp_u_nb = new sampler[node_u->node_size];
+	smp_u.init(node_u->node_size, u_wei);			//smp_u存储了node_u网络中每个节点权重之和转换的概率
+	smp_u_nb = new sampler[node_u->node_size];		//smp_u_nb是一个一维数组，长度为node_size，每个index存储每个节点连接其他节点的权重转换的概率
 	for (int k = 0; k != node_u->node_size; k++)
 	{
 		if (u_nb_cnt[k] == 0) continue;
@@ -396,12 +427,17 @@ void line_trainer::train_sample(real alpha, real *_error_vec, double(*func_rand_
 	real f, g;
 	line_node *node_u = phin->node_u, *node_v = phin->node_v;
 
+	//根据概率随机选取一个node开始训练
 	u = smp_u.draw(func_rand_num(), func_rand_num());
+	//如果该node是孤立点，不连通，则结束
 	if (u_nb_cnt[u] == 0) return;
+	//随机找到与u连接的另一个节点index
 	index = (int)(smp_u_nb[u].draw(func_rand_num(), func_rand_num()));
+	//获取对应另一个节点的id
 	v = u_nb_id[u][index];
 
 	vector_size = node_u->vector_size;
+	//将容错向量传递给Eigen并初始化
 	Eigen::Map<BLPVector> error_vec(_error_vec, vector_size);
 	error_vec.setZero();
 

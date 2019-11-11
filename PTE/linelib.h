@@ -24,14 +24,15 @@ typedef Eigen::Matrix< real, 1, Eigen::Dynamic,
 	Eigen::RowMajor | Eigen::AutoAlign >
 	BLPVector;
 
+//节点，仅存储一个节点的名字（单词）
 struct struct_node {
 	char *word;
 };
-
+//存储相邻边信息
 struct hin_nb {
-	int nb_id;
-	double eg_wei;
-	char eg_tp;
+	int nb_id;		//neighbor index
+	double eg_wei;	//edge weight
+	char eg_tp;		//edge type (one of 'l' 'w' and 'd')
 };
 
 class sampler
@@ -51,12 +52,12 @@ public:
 class line_node
 {
 protected:
-	struct struct_node *node;
-	int node_size, node_max_size, vector_size;
-	char node_file[MAX_STRING];
-	int *node_hash;
-	real *_vec;
-	Eigen::Map<BLPMatrix> vec;
+	struct struct_node *node;					//存储每个节点对应的名称
+	int node_size, node_max_size, vector_size;	//所有节点的多少，节点最大size，向量维度
+	char node_file[MAX_STRING];					//节点对应的文件
+	int *node_hash;								//节点对应的hash数组
+	real *_vec;									//节点对应的向量?
+	Eigen::Map<BLPMatrix> vec;					//?
 
 	int get_hash(char *word);
 	int add_node(char *word);
@@ -75,11 +76,11 @@ public:
 class line_hin
 {
 protected:
-	char hin_file[MAX_STRING];
+	char hin_file[MAX_STRING];			//读取的组合ww.net, dw.net, lw.net的text.hin文件，包含了所有节点的连接信息，通过type区分
 
-	line_node *node_u, *node_v;
-	std::vector<hin_nb> *hin;
-	long long hin_size;
+	line_node *node_u, *node_v;			//连接的两个网络，其中u表示网络中所有节点，v仅表示单词节点
+	std::vector<hin_nb> *hin;			//hin是一个二维数组，第一维度大小为所有节点的个数size(node_u)，第二维度存储每个node_u节点连接node_v节点的信息
+	long long hin_size;					//hin_size保存了总连接节点的个数
 
 public:
 	line_hin();
@@ -97,6 +98,9 @@ protected:
 
 	int *u_nb_cnt; int **u_nb_id; double **u_nb_wei;
 	double *u_wei, *v_wei;
+
+	//smp_u存储了node_u网络中每个节点权重之和转换的概率
+	//smp_u_nb是一个一维数组，长度为node_size，每个index存储每个节点连接其他节点的权重转换的概率
 	sampler smp_u, *smp_u_nb;
 	real *expTable;
 	int neg_samples, *neg_table;

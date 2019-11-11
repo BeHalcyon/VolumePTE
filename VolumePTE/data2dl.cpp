@@ -205,6 +205,7 @@ void Process()
 		 * label:2 and 1 l
 		 * label:2 CAD&CG
 		 * "
+		 * ¥Ê¥¢∏Ò Ω£∫label_name word_name edge_weight edge_type('l' for label-word, 'd' for doc-word)
 		 */
 		char lb[MAX_STRING];
 

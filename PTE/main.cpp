@@ -60,9 +60,15 @@ void TrainModel() {
 	long a;
 	pthread_t *pt = (pthread_t *)malloc(num_threads * sizeof(pthread_t));
 	starting_alpha = alpha;
-
+	//nodes_file格式，将所有的node文件合并：name
 	nodes.init(nodes_file, vector_size);
+	//words_file格式（words.node），针对于单词库：name
 	words.init(words_file, vector_size);
+	//hin_file格式，将所有的ww.net,lw.net,dl.net合并：name_a name_b weight type
+	//保证u为全部节点： w1 w2 w3 w4 ... wn | l1 l2 l3 l4 ... lm | d1 d2 d3 ... dp
+	//保证v为单词节点： w1 w2 w3 w4 ... wn
+
+	//text_hin可看作是网络与words节点连接的网络
 	text_hin.init(hin_file, &nodes, &words);
 
 	trainer_ww.init('w', &text_hin, negative);
