@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.645
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Volume2Label", "VolumePTE\VolumePTE.vcxproj", "{1D0FDDF7-F8B1-4B31-9D55-005091481D82}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoumePTE", "VolumePTE\VolumePTE.vcxproj", "{1D0FDDF7-F8B1-4B31-9D55-005091481D82}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTE", "PTE\PTE.vcxproj", "{C278923D-56C1-47BC-A7DC-BE5C7BE0C84E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Volume2Vec", "Volume2Vec\Volume2Vec.vcxproj", "{3BAA99C7-76E1-427C-B78E-E81EDD56E57E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Volume2Word", "Volume2Word\Volume2Word.vcxproj", "{4FCB9012-9441-4356-AA10-359F5CE8CC2E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VolumeToLabel", "VolumeToLabel\VolumeToLabel.vcxproj", "{B12702AD-ABFB-343A-A199-8E24837244A3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,12 @@ Global
 		{4FCB9012-9441-4356-AA10-359F5CE8CC2E}.Release|x64.Build.0 = Release|x64
 		{4FCB9012-9441-4356-AA10-359F5CE8CC2E}.Release|x86.ActiveCfg = Release|Win32
 		{4FCB9012-9441-4356-AA10-359F5CE8CC2E}.Release|x86.Build.0 = Release|Win32
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x64.ActiveCfg = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x64.Build.0 = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Debug|x86.ActiveCfg = Debug|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.ActiveCfg = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x64.Build.0 = Release|x64
+		{B12702AD-ABFB-343A-A199-8E24837244A3}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
